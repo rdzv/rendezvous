@@ -120,7 +120,7 @@ def test_resume_existing_release_without_reuploading_matching_assets(tmp_path, m
     calls = []
     monkeypatch.setattr(publisher, 'resolve_release_tag', lambda: 'a' * 40)
     monkeypatch.setattr(publisher, 'prepare_assets', lambda commit: [asset])
-    monkeypatch.setattr(publisher, 'api', lambda *args, **kwargs: release)
+    monkeypatch.setattr(publisher, 'find_release', lambda: release)
     monkeypatch.setattr(publisher, 'gh', lambda *args, **kwargs: calls.append(args))
     publisher.publish()
     assert all(call[:2] == ('release', 'edit') for call in calls)
@@ -153,7 +153,7 @@ def test_new_release_stays_draft_until_every_asset_is_verified(tmp_path, monkeyp
             release['draft'] = False
 
     monkeypatch.setattr(publisher, 'gh', gh)
-    monkeypatch.setattr(publisher, 'api', lambda *args, **kwargs: release)
+    monkeypatch.setattr(publisher, 'find_release', lambda: release)
     publisher.publish()
     assert [call[1] for call in calls] == ['create', 'upload', 'edit']
     assert release['draft'] is False
@@ -164,7 +164,26 @@ def test_missing_assets_in_an_already_published_release_are_not_mutated(tmp_path
     asset.write_bytes(b'correct data')
     monkeypatch.setattr(publisher, 'resolve_release_tag', lambda: 'a' * 40)
     monkeypatch.setattr(publisher, 'prepare_assets', lambda commit: [asset])
-    monkeypatch.setattr(publisher, 'api', lambda *args, **kwargs: {'draft': False, 'assets': []})
+    monkeypatch.setattr(publisher, 'find_release', lambda: {'draft': False, 'assets': []})
     monkeypatch.setattr(publisher, 'gh', lambda *args, **kwargs: pytest.fail('Unexpected GitHub mutation'))
     with pytest.raises(RuntimeError, match='refusing to mutate'):
         publisher.publish()
+
+
+def test_release_lookup_finds_drafts_across_pages(monkeypatch):
+    draft = {'tag_name': publisher.TAG, 'draft': True, 'assets': []}
+
+    def gh(*args, **kwargs):
+        assert args[0] == 'api' and '--paginate' in args and '--slurp' in args
+        assert '/releases?' in args[-1]
+        return [[{'tag_name': 'v0.1.0', 'draft': False}], [draft]]
+
+    monkeypatch.setattr(publisher, 'gh', gh)
+    assert publisher.find_release() == draft
+
+
+def test_release_lookup_rejects_ambiguous_drafts(monkeypatch):
+    draft = {'tag_name': publisher.TAG, 'draft': True, 'assets': []}
+    monkeypatch.setattr(publisher, 'gh', lambda *args, **kwargs: [[draft, draft]])
+    with pytest.raises(RuntimeError, match='Multiple GitHub releases'):
+        publisher.find_release()

@@ -49,6 +49,17 @@ def api(path, *, missing_ok=False):
     return gh('api', f'repos/{GITHUB_REPOSITORY}/{path}', json_result=True, missing_ok=missing_ok)
 
 
+def find_release():
+    # The release-by-tag REST endpoint omits drafts. Listing authenticated
+    # releases is required to verify or resume an upload before publication.
+    pages = gh('api', '--paginate', '--slurp',
+               f'repos/{GITHUB_REPOSITORY}/releases?per_page=100', json_result=True)
+    matches = [release for page in pages for release in page if release['tag_name'] == TAG]
+    if len(matches) > 1:
+        raise RuntimeError('Multiple GitHub releases use this tag; refusing to choose or overwrite one')
+    return matches[0] if matches else None
+
+
 def resolve_release_tag():
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', VERSION):
         raise RuntimeError('Invalid release version')
@@ -183,7 +194,7 @@ def assert_existing_assets(release, assets):
 def publish(*, check=False):
     commit = resolve_release_tag()
     assets = prepare_assets(commit)
-    release = api(f'releases/tags/{TAG}', missing_ok=True)
+    release = find_release()
     if release is not None:
         missing = assert_existing_assets(release, assets)
         if not release['draft'] and missing:
@@ -209,7 +220,9 @@ These are the exact runtime bytes distributed by the website. The original relea
            '--draft', '--title', f'Rendezvous {VERSION}', '--notes-file', str(notes))
     if missing:
         gh('release', 'upload', TAG, '--repo', GITHUB_REPOSITORY, *map(str, missing))
-    release = api(f'releases/tags/{TAG}')
+    release = find_release()
+    if release is None:
+        raise RuntimeError('Uploaded GitHub draft release could not be found')
     if assert_existing_assets(release, assets):
         raise RuntimeError('GitHub upload verification found missing assets')
     if resolve_release_tag() != commit:

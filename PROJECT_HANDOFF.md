@@ -542,6 +542,7 @@ use the existing Global API Key credentials and the official entry point:
 source ~/fernando/config
 export CLOUDFLARE_API_KEY="$CLOUDFLARE_API_TOKEN"
 export CLOUDFLARE_EMAIL="fernando@jdgregson.com"
+export GH_TOKEN="$GITHUB_PAT"
 unset CLOUDFLARE_API_TOKEN
 python3 tools/release.py publish
 ```
