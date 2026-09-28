@@ -1,0 +1,339 @@
+[
+  {
+    "id": "37af5e1f-2000-404d-8a3f-dd8526b1ed85",
+    "hostname": "host.rdzv.sh",
+    "status": "pending",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.host.rdzv.sh",
+      "value": "750c471b-306c-4096-8188-12965aece0d2"
+    },
+    "ssl": {
+      "id": "b9c3a281-ea34-4632-94f5-4b40e71ea204",
+      "type": "dv",
+      "method": "http",
+      "status": "initializing",
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "wildcard": false,
+      "certificate_authority": "google"
+    }
+  },
+  {
+    "id": "4d3960b1-4a50-4bd1-82d5-8624b4f3e009",
+    "hostname": "host.rendezvous.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.host.rendezvous.sh",
+      "value": "8e5c164b-da58-4c1c-8d6b-7a0bd6945ebe"
+    },
+    "ssl": {
+      "id": "d44ffa99-1504-444b-ba40-f78147c680ad",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "host.rendezvous.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "76846807428300907340553932575536687551",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:42Z",
+          "fingerprint_sha256": "7be7cf68b241e5463c65460da611a4475fb763d3f1b93fe2b1e13e99c78e6cb0",
+          "id": "927521a1-0b23-42a9-bb98-7c11d575e7fd"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "123668782074719126901919611369247892113",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:52Z",
+          "fingerprint_sha256": "0892ab1365debfc755244b2af65bdcc04333b6b965277a6cdc08a0f3646231cf",
+          "id": "33adc8ff-be9a-4513-a6e0-0a1b2838ed11"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "07cf5380-0e72-44ae-b644-21a366867261",
+    "hostname": "join.rdzv.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.join.rdzv.sh",
+      "value": "3986970e-18f4-4107-a972-9cc490d3abd5"
+    },
+    "ssl": {
+      "id": "ed91d3ce-5568-48f0-8419-83ca34b25325",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "join.rdzv.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "138136518664566183381723162391820528136",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:06Z",
+          "issued_on": "2026-09-27T18:16:14Z",
+          "fingerprint_sha256": "7f2eea24431177c8b55f2da2fc14b375c8585f11a8a25a24310c856f3688324c",
+          "id": "08b991c6-57ed-419b-8051-6221159cea20"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "127470238617150578238952780199932989931",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:07Z",
+          "issued_on": "2026-09-27T18:16:25Z",
+          "fingerprint_sha256": "c8aeb0c4eec69d117228331e1839bdbb083ed64493573edd29a381ee882f3bea",
+          "id": "09aa64a6-2264-4361-8cb8-de27c02e4d98"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "3764e9d4-9403-4979-b175-d45e96bd17bc",
+    "hostname": "join.rendezvous.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.join.rendezvous.sh",
+      "value": "72fb4cbe-17a8-4947-a20b-569cfd14d537"
+    },
+    "ssl": {
+      "id": "33f604bf-fc13-4dde-b4b8-2c49908b9564",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "join.rendezvous.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "76345454222554552115948096887875342351",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:02Z",
+          "issued_on": "2026-09-27T18:13:42Z",
+          "fingerprint_sha256": "1a8a20766ff57ee8e38b98869328886edb844dff5cbba727fed26ed242dd14b8",
+          "id": "6080b7b8-5494-4b7d-8454-1a123ab650d6"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "33846140830152842455107706070692671413",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:02Z",
+          "issued_on": "2026-09-27T18:13:52Z",
+          "fingerprint_sha256": "c136c4067d02561c4a1f3252d798802ea3de1fa7eb470c720735e62e4598e399",
+          "id": "314f8a38-5562-4e4e-b425-82d5055f7542"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "790a88c3-0b33-4cd2-bc6e-4170582e3a94",
+    "hostname": "rdzv.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.rdzv.sh",
+      "value": "b9219812-4151-4e1b-806f-ae2447fa7398"
+    },
+    "ssl": {
+      "id": "5c386d78-e30c-4116-817a-64551b758222",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "rdzv.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "42418772864168781481416682657459794790",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:02Z",
+          "issued_on": "2026-09-27T18:16:14Z",
+          "fingerprint_sha256": "688ca4c6bf61bd7e925fad2f943c445136aa04fa25053bf645141dc482221191",
+          "id": "7c1cd840-f977-47de-953e-20002c9efe9c"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "73827023078159718505571100624658980995",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:03Z",
+          "issued_on": "2026-09-27T18:16:24Z",
+          "fingerprint_sha256": "6d5ccc2d93d3ab96da0939f09b77cf7e8530c41e0876a0cebb7958166fad4272",
+          "id": "92399e7b-1a0e-4eb3-b032-167906669f77"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "c3291be0-1523-4374-a3dd-a164b14a90c0",
+    "hostname": "rendezvous.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.rendezvous.sh",
+      "value": "63869076-4e46-4688-9e3b-9301f78abb69"
+    },
+    "ssl": {
+      "id": "c6d03b91-3ab4-4d1c-a208-8cdc959157ca",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "rendezvous.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "96326871276019963305274512591735579296",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:42Z",
+          "fingerprint_sha256": "34e39a5d2a3a477f336903878afb0a6afc63baef7af8f8efceae67c28e3b5f43",
+          "id": "bbe30280-516c-4565-91d6-86fa9b498137"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "112782516333011348516203996639408103874",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:54Z",
+          "fingerprint_sha256": "98131090ac0cbe4ffc5fc9d3b2d0e24df760fa085d6e8a79ffa12ecbc9ea0f98",
+          "id": "b96a7c7a-8f1d-4527-b8e5-d44939450146"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "40bbb9ef-f721-42b3-8686-54c78378d2c1",
+    "hostname": "www.rdzv.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.www.rdzv.sh",
+      "value": "02d2d5f2-8106-4a1b-8d36-d86cdab6e6ce"
+    },
+    "ssl": {
+      "id": "8e21d795-7da6-4871-9b3d-ebb6984f4388",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "www.rdzv.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "78587892640579908493180328071061734536",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:02Z",
+          "issued_on": "2026-09-27T18:16:04Z",
+          "fingerprint_sha256": "2b46d686df15d41aecc4fa7ec4764c6402f50afa60a6720e886fa3050b7dcefa",
+          "id": "3743acbb-d0ac-4aba-b43f-65017370ec03"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "56228379104186111919246670829197230816",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:03Z",
+          "issued_on": "2026-09-27T18:16:14Z",
+          "fingerprint_sha256": "78da164d2912be9ab156014002d8eb14b4d3c415ac9979058a44f1628e79bd85",
+          "id": "d15285d8-ef50-4db1-9acb-b462acacbb9b"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  },
+  {
+    "id": "bea22b1a-d3ed-4b31-861f-e1139e57ba85",
+    "hostname": "www.rendezvous.sh",
+    "status": "active",
+    "ownership_verification": {
+      "type": "txt",
+      "name": "_cf-custom-hostname.www.rendezvous.sh",
+      "value": "c95a20bb-1ae6-4fa6-bdb8-46a1d66a8673"
+    },
+    "ssl": {
+      "id": "25cb0ffb-8311-4ba0-bb9b-d5d83538a431",
+      "type": "dv",
+      "method": "http",
+      "status": "active",
+      "hosts": [
+        "www.rendezvous.sh"
+      ],
+      "settings": {
+        "min_tls_version": "1.2"
+      },
+      "bundle_method": "ubiquitous",
+      "certificates": [
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "52612295546373644770281107840571523348",
+          "signature": "SHA256WithRSA",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:42Z",
+          "fingerprint_sha256": "b7b48118d468744e97b9e762c8eb929c959a6ccf98bd2597c6f176fd2541865e",
+          "id": "0e5921d6-f4e0-4722-8ba7-dc59ac6f46d8"
+        },
+        {
+          "issuer": "SSLCorporation",
+          "serial_number": "16728423218397701644500597619228233574",
+          "signature": "ECDSAWithSHA256",
+          "expires_on": "2026-12-26T09:55:01Z",
+          "issued_on": "2026-09-27T18:13:55Z",
+          "fingerprint_sha256": "7f2961cf37c58599e1fc8bad270401860540b8088c6dfbac15b8579cb116286f",
+          "id": "5557a557-5886-43e3-b332-0956eee1c872"
+        }
+      ],
+      "wildcard": false,
+      "certificate_authority": "ssl_com"
+    }
+  }
+]

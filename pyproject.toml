@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rendezvous-shell"
+version = "0.2.8"
+description = "Single-use, single-connection SSH sessions over authenticated Tor onion services"
+requires-python = ">=3.11"
+dependencies = ["asyncssh>=2.21,<3", "cryptography>=45"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-asyncio", "pyte==0.8.2"]
+
+[project.scripts]
+rendezvous = "rendezvous:main"
+rdzv = "rendezvous:main"
+
+[tool.setuptools]
+py-modules = ["rendezvous", "agent_session"]

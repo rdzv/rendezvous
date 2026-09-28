@@ -1,0 +1,20 @@
+name = "rendezvous"
+account_id = "eb7e285239c6bee447d763904da41682"
+main = "web/worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+preview_urls = false
+routes = [
+  { pattern = "connect.rdzv.net/*", zone_id = "7babe7d120a264ed7e8adca7ec05ecc1" },
+  { pattern = "fallback.rdzv.net/*", zone_id = "7babe7d120a264ed7e8adca7ec05ecc1" }
+]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "none"
+not_found_handling = "none"
+
+[observability]
+enabled = false

@@ -1,0 +1,93 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLI reference — Rendezvous</title><link rel="icon" href="/mark.svg"><link rel="stylesheet" href="/style.css"></head><body>
+<header class="nav wrap"><a class="brand" href="/"><img src="/mark.svg" alt="" width="32" height="32">rendezvous<span>.sh</span></a><nav aria-label="Main navigation"><a href="/">Home</a><a href="/docs">Docs</a><a href="/cli">CLI</a><a href="/security">Security</a><a class="nav-cta" href="/#start">Get a shell <span aria-hidden="true">↗</span></a></nav></header>
+<main class="doc wrap"><p class="eyebrow">Rendezvous 0.2.8</p><h1>CLI reference.</h1><p>Generated from this release's actual <code>--help</code> output. Options are refreshed automatically with every release build.</p>
+<h2>Using options with the website commands</h2><pre>curl -fsSL https://host.rdzv.sh | sh -s -- --verbose
+curl -fsSL https://host.rdzv.sh | sh -s -- --approve
+curl -fsSL https://join.rdzv.sh | sh -s -- --invitation 'rv1.…'
+curl -fsSL https://join.rdzv.sh | sh -s -- -a --invitation "&lt;invitation&gt;"
+curl -fsSL https://host.rdzv.sh | sh -s -- --help
+curl -fsSL https://join.rdzv.sh | sh -s -- --help</pre>
+<h2>General options</h2><pre>usage: rdzv [-h] [--version] {host,join,session} ...
+
+Temporary single-use shell access over SSH and Tor.
+
+positional arguments:
+  {host,join,session}
+    session            Control a local background agent session
+
+options:
+  -h, --help           show this help message and exit
+  --version            show program&#x27;s version number and exit</pre>
+<h2>Host options</h2><pre>usage: rdzv host [-h] [--invite-timeout INVITE_TIMEOUT]
+                 [--session-timeout SESSION_TIMEOUT] [-S] [--verbose]
+                 [--approve]
+
+options:
+  -h, --help            show this help message and exit
+  --invite-timeout INVITE_TIMEOUT
+                        Seconds to redeem the invitation (default: 600)
+  --session-timeout SESSION_TIMEOUT
+                        Session lifetime in seconds (default: 43200 / 12
+                        hours)
+  -S, --single-hop      Experimental shorter host-side Tor route; gives up
+                        host-location anonymity
+  --verbose, -v         Log all outgoing terminal output instead of one-line
+                        previews
+  --approve             Require local approval for each agent command (off by
+                        default)</pre>
+<h2>Join options</h2><pre>usage: rdzv join [-h]
+                 [--invitation INVITATION | --invitation-file INVITATION_FILE]
+                 [--command COMMAND | -a] [--session-timeout SESSION_TIMEOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --invitation INVITATION
+                        Invitation text (visible in shell history and process
+                        arguments)
+  --invitation-file INVITATION_FILE
+                        Read invitation from a private file instead of
+                        prompting
+  --command COMMAND     Execute one command instead of an interactive shell
+  -a, --agent           Keep SSH in the background and print local session
+                        controls
+  --session-timeout SESSION_TIMEOUT
+                        Client session lifetime in seconds (default: 43200 /
+                        12 hours)</pre>
+<h2>Agent session controls</h2><pre>usage: rdzv session [-h] {exec,help,close} ...
+
+positional arguments:
+  {exec,help,close}
+    exec             Execute a command and return its stdout, stderr, and exit
+                     status
+    help             Show controls for this session
+    close            End the remote connection
+
+options:
+  -h, --help         show this help message and exit</pre>
+<h2>Execute a command</h2><pre>usage: rdzv session exec [-h] session command
+
+positional arguments:
+  session     Local session ID printed by join --agent
+  command     Command to run in a fresh remote shell
+
+options:
+  -h, --help  show this help message and exit</pre>
+<h2>Session instructions</h2><pre>usage: rdzv session help [-h] session
+
+positional arguments:
+  session
+
+options:
+  -h, --help  show this help message and exit</pre>
+<h2>Close session</h2><pre>usage: rdzv session close [-h] session
+
+positional arguments:
+  session
+
+options:
+  -h, --help  show this help message and exit</pre>
+<h2>Agent mode</h2><p><code>-a</code> / <code>--agent</code> starts a detached joiner and prints session-specific commands with an absolute helper path. <code>session exec SESSION COMMAND</code> streams the command's stdout and stderr and returns its exit code in one call. Each command uses a fresh non-interactive shell; use <code>cd /path &amp;&amp; ...</code> when needed. Canceling a local exec call stops that command. Close explicitly when finished. Local controls use a private same-user Unix socket.</p>
+<h2>Session lifetime</h2><p>Host and client default to twelve hours (43,200 seconds). <code>--session-timeout SECONDS</code> adjusts either side; the earlier deadline ends the session. The background agent's limit includes startup and approval waiting. The controller exits when the connection ends.</p>
+<h2>Command approval and host controls</h2><p><code>host --approve</code> requires local approval of agent exec requests. It is off by default and requires a controlling terminal. Interactive human sessions use a host without this option. The full command is logged, followed by <code>Approve command?</code>; repeated unbound keys change it to <code>Approve command (a/A/d)?</code>.</p><pre>a: approve, A: approve all, d: deny, D: disconnect</pre><p>Those bindings appear in the bottom bar only while a command awaits a decision. Only the a/A keys are green and d/D keys red; punctuation and descriptions stay gray. A approves the current request and all subsequent requests. Denial returns exit status 126 without executing the command. Otherwise, the bar shows only <code>D: disconnect</code>. Ctrl-C remains supported. The bar follows resizing and is removed on exit; redirected logs contain no bar control sequences.</p>
+<h2>Host logging</h2><p><code>[input]</code> shows complete agent exec requests and interactive human input. Human keystrokes append to the same line until Enter; they are not a reconstruction of commands after shell editing or expansion. Incoming content is red, output cyan, and labels stay neutral.</p><p><code>[output]</code> follows logical newline boundaries, independent of SSH packet sizes. Long host log lines are shortened by default; <code>--verbose</code> includes full host output logs. Human PTYs combine stdout/stderr; agent exec keeps them separate. Guest command output is unchanged. Host logs are written to standard error.</p>
+</main><footer class="wrap"><a class="brand" href="/">rendezvous<span>.sh</span></a><div><a href="/docs">Documentation</a><a href="/cli">CLI reference</a><a href="/security">Security</a><a href="https://github.com/rdzv/rendezvous">GitHub</a></div></footer></body></html>

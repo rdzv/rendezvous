@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+node_modules/
+.wrangler/
+public/releases/
+public/install.sh
+deployment-state.json
+.build/

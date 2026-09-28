@@ -1,0 +1,134 @@
+#!/bin/sh
+# Self-contained, per-user bootstrap. No sudo, package managers, or system Python/Tor.
+set -eu
+umask 077
+
+rdzv_main() {
+  VERSION='__VERSION__'
+  RELEASE_ORIGIN='https://rendezvous.fernando-eb7.workers.dev'
+  MODE='__DEFAULT_MODE__'
+  case "${1-}" in host|join|install) MODE=$1; shift ;; esac
+  case "$MODE" in host|join|install) ;; *) printf '%s\n' 'Invalid mode' >&2; return 1 ;; esac
+  if [ "$(uname -s)" != Linux ]; then
+    printf '%s\n' 'This portable release supports Linux x86_64, aarch64, and armv7l. No system changes were made.' >&2
+    return 1
+  fi
+  case "$(uname -m)" in
+    x86_64) PLATFORM=x86_64 ;;
+    aarch64|arm64)
+      # A 64-bit ARM kernel can run a 32-bit hard-float userland.
+      if [ "$(getconf LONG_BIT 2>/dev/null || true)" = 32 ]; then PLATFORM=armv7l; else PLATFORM=aarch64; fi ;;
+    armv7l|armv8l) PLATFORM=armv7l ;;
+    *) printf '%s\n' 'This portable release supports Linux x86_64, aarch64, and armv7l. No system changes were made.' >&2; return 1 ;;
+  esac
+  case "$PLATFORM" in
+__PLATFORM_RELEASES__
+  esac
+  GLIBC=$(getconf GNU_LIBC_VERSION 2>/dev/null || true)
+  case "$GLIBC" in 'glibc '*) GLIBC=${GLIBC#glibc } ;; *) printf '%s\n' 'This release needs glibc 2.34+ (not Alpine/musl).' >&2; return 1 ;; esac
+  MAJOR=${GLIBC%%.*}; MINOR=${GLIBC#*.}; MINOR=${MINOR%%.*}
+  case "$MAJOR:$MINOR" in *[!0-9:]*|:|*:) printf '%s\n' 'Could not determine glibc version.' >&2; return 1 ;; esac
+  if [ "$MAJOR" -lt 2 ] || { [ "$MAJOR" -eq 2 ] && [ "$MINOR" -lt 34 ]; }; then
+    printf '%s\n' 'This release requires glibc 2.34+ (Ubuntu 22.04+, Debian 12+, Amazon Linux 2023).' >&2
+    return 1
+  fi
+  for tool in curl tar sha256sum mktemp; do
+    command -v "$tool" >/dev/null 2>&1 || { printf 'Required base utility missing: %s\n' "$tool" >&2; return 1; }
+  done
+  : "${HOME:?HOME must be set}"
+  ROOT="$HOME/.local/share/rendezvous"
+  BIN="$HOME/.local/bin"
+  if [ -L "$ROOT" ]; then printf '%s\n' 'Refusing symlinked installation root.' >&2; return 1; fi
+  mkdir -p "$ROOT" "$BIN"
+  chmod 700 "$ROOT"
+  WORK=$(mktemp -d "$ROOT/.install.XXXXXXXX")
+  PENDING_ENV=''
+  trap 'rm -rf -- "$WORK"; if [ -n "$PENDING_ENV" ]; then rm -rf -- "$PENDING_ENV"; fi' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM HUP
+  TARGET="$ROOT/$VERSION-$PLATFORM"
+  if [ ! -f "$TARGET/.complete" ] || [ "$(cat "$TARGET/.complete" 2>/dev/null)" != "$RELEASE_SHA256" ]; then
+    if [ -t 2 ] && [ "${NO_COLOR+x}" != x ] && [ "${TERM-}" != dumb ]; then
+      printf '\033[90mDownloading Rendezvous %s…\033[0m\n' "$VERSION" >&2
+    else
+      printf 'Downloading Rendezvous %s…\n' "$VERSION" >&2
+    fi
+    : > "$WORK/release.tar.gz"
+    for part in $RELEASE_PARTS; do
+      curl --proto '=https' --tlsv1.2 -fsSL --retry 3 --connect-timeout 20 --max-time 300 \
+        "$RELEASE_ORIGIN/releases/$VERSION/$part" -o "$WORK/part"
+      cat "$WORK/part" >> "$WORK/release.tar.gz"
+    done
+    printf '%s  %s\n' "$RELEASE_SHA256" "$WORK/release.tar.gz" > "$WORK/checksum"
+    if ! sha256sum -c "$WORK/checksum" >/dev/null; then
+      printf '%s\n' 'Release checksum mismatch; nothing installed.' >&2
+      return 1
+    fi
+    tar -tzf "$WORK/release.tar.gz" > "$WORK/members"
+    while IFS= read -r member; do
+      case "/$member/" in *'/../'*|*'/./'*) printf '%s\n' 'Unsafe release path.' >&2; return 1 ;; esac
+      case "$member" in
+        app|app/*|bin|bin/*|python|python/*|tor|tor/*|licenses|licenses/*|BUILD.json) ;;
+        *) printf '%s\n' 'Unexpected release contents.' >&2; return 1 ;;
+      esac
+    done < "$WORK/members"
+    ENV_DIR=$(mktemp -d "$ROOT/runtime-$VERSION.XXXXXXXX")
+    PENDING_ENV=$ENV_DIR
+    # Only the exact hash-pinned publisher archive is extracted, never unverified input.
+    tar -xzf "$WORK/release.tar.gz" --no-same-owner --no-same-permissions -C "$ENV_DIR"
+    "$ENV_DIR/bin/rdzv" --version >/dev/null
+    "$ENV_DIR/bin/tor" --version >/dev/null
+    mkdir -p "$TARGET"
+    printf '%s\n' "$ENV_DIR" > "$WORK/environment"
+    mv "$WORK/environment" "$TARGET/environment"
+    printf '%s\n' "$RELEASE_SHA256" > "$WORK/complete"
+    mv "$WORK/complete" "$TARGET/.complete"
+    PENDING_ENV=''
+  fi
+  ENV_DIR=$(cat "$TARGET/environment")
+  case "$ENV_DIR" in "$ROOT"/runtime-*) ;; *) printf '%s\n' 'Invalid local runtime path.' >&2; return 1 ;; esac
+  cat > "$WORK/rdzv" <<SH
+#!/bin/sh
+set -eu
+ROOT="\$HOME/.local/share/rendezvous"
+ENV_DIR=\$(cat "\$ROOT/$VERSION-$PLATFORM/environment")
+case "\$ENV_DIR" in "\$ROOT"/runtime-*) ;; *) exit 1 ;; esac
+exec "\$ENV_DIR/bin/rdzv" "\$@"
+SH
+  chmod 700 "$WORK/rdzv"
+  mv "$WORK/rdzv" "$BIN/rdzv"
+  cp "$BIN/rdzv" "$WORK/rendezvous"
+  mv "$WORK/rendezvous" "$BIN/rendezvous"
+  rm -rf -- "$WORK"
+  trap - EXIT INT TERM HUP
+  [ "$MODE" != install ] || return 0
+  if [ "$MODE" = join ]; then
+    HAS_INVITATION=0; HAS_COMMAND=0; SKIP_VALUE=0; HELP=0; AGENT=0
+    for arg in "$@"; do
+      if [ "$SKIP_VALUE" = 1 ]; then SKIP_VALUE=0; continue; fi
+      case "$arg" in
+        --invitation|--invitation-file) HAS_INVITATION=1; SKIP_VALUE=1 ;;
+        --invitation=*|--invitation-file=*) HAS_INVITATION=1 ;;
+        --command) HAS_COMMAND=1; SKIP_VALUE=1 ;;
+        --command=*) HAS_COMMAND=1 ;;
+        --session-timeout) SKIP_VALUE=1 ;;
+        -a|--agent) AGENT=1 ;;
+        --help|-h) HELP=1 ;;
+      esac
+    done
+    if [ "$HELP" = 1 ]; then exec "$BIN/rdzv" "$MODE" "$@"; fi
+    # The curl pipeline occupies stdin even when an invitation is supplied.
+    # A prompted invitation or interactive shell needs the controlling terminal.
+    if [ "$HAS_INVITATION" = 0 ] || { [ "$HAS_COMMAND" = 0 ] && [ "$AGENT" = 0 ]; }; then
+      if ( : </dev/tty ) 2>/dev/null; then
+        exec "$BIN/rdzv" "$MODE" "$@" </dev/tty
+      fi
+      printf '%s\n' 'No terminal. Supply --invitation or --invitation-file with --command or --agent.' >&2
+      return 1
+    fi
+    # Never forward the piped installer text into a remote command.
+    exec "$BIN/rdzv" "$MODE" "$@" </dev/null
+  fi
+  exec "$BIN/rdzv" "$MODE" "$@"
+}
+rdzv_main "$@"

@@ -1,0 +1,11 @@
+{
+  "name": "rendezvous-web",
+  "version": "0.2.6",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test web/*.test.js",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": { "wrangler": "^4.0.0" }
+}
