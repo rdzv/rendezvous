@@ -6,7 +6,8 @@ import subprocess
 
 def render(python, root, *, command=None):
     environment = {name: value for name, value in os.environ.items()
-                   if name not in {'CLOUDFLARE_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_EMAIL'}}
+                   if name not in {'CLOUDFLARE_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_EMAIL',
+                                   'GH_TOKEN', 'GITHUB_TOKEN', 'GITHUB_PAT'}}
     environment.update(COLUMNS='80', NO_COLOR='')
     def cli(*args):
         invocation = command if command is not None else [str(python), '-I', str(root / 'rendezvous.py')]
@@ -14,7 +15,6 @@ def render(python, root, *, command=None):
             check=True, capture_output=True, text=True, timeout=120,
             env=environment).stdout.strip()
     version = html.escape(cli('--version'))
-    release_version = version.removeprefix('Rendezvous ')
     sections = []
     for mode, title in [('', 'General options'), ('host', 'Host options'), ('join', 'Join options'),
                         ('session', 'Agent session controls'), ('session exec', 'Execute a command'),
@@ -35,7 +35,7 @@ curl -fsSL https://join.rdzv.sh | sh -s -- --help</pre>
 <h2>Session lifetime</h2><p>Host and client default to twelve hours (43,200 seconds). <code>--session-timeout SECONDS</code> adjusts either side; the earlier deadline ends the session. The background agent's limit includes startup and approval waiting. The controller exits when the connection ends.</p>
 <h2>Command approval and host controls</h2><p><code>host --approve</code> requires local approval of agent exec requests. It is off by default and requires a controlling terminal. Interactive human sessions use a host without this option. The full command is logged, followed by <code>Approve command?</code>; repeated unbound keys change it to <code>Approve command (a/A/d)?</code>.</p><pre>a: approve, A: approve all, d: deny, D: disconnect</pre><p>Those bindings appear in the bottom bar only while a command awaits a decision. Only the a/A keys are green and d/D keys red; punctuation and descriptions stay gray. A approves the current request and all subsequent requests. Denial returns exit status 126 without executing the command. Otherwise, the bar shows only <code>D: disconnect</code>. Ctrl-C remains supported. The bar follows resizing and is removed on exit; redirected logs contain no bar control sequences.</p>
 <h2>Host logging</h2><p><code>[input]</code> shows complete agent exec requests and interactive human input. Human keystrokes append to the same line until Enter; they are not a reconstruction of commands after shell editing or expansion. Incoming content is red, output cyan, and labels stay neutral.</p><p><code>[output]</code> follows logical newline boundaries, independent of SSH packet sizes. Long host log lines are shortened by default; <code>--verbose</code> includes full host output logs. Human PTYs combine stdout/stderr; agent exec keeps them separate. Guest command output is unchanged. Host logs are written to standard error.</p>
-</main><footer class="wrap"><a class="brand" href="/">rendezvous<span>.sh</span></a><div><a href="/docs">Documentation</a><a href="/cli">CLI reference</a><a href="/security">Security</a><a href="/releases/''' + release_version + '''/rendezvous-''' + release_version + '''-source.tar.gz">Source</a></div></footer></body></html>
+</main><footer class="wrap"><a class="brand" href="/">rendezvous<span>.sh</span></a><div><a href="/docs">Documentation</a><a href="/cli">CLI reference</a><a href="/security">Security</a><a href="https://github.com/rdzv/rendezvous">GitHub</a></div></footer></body></html>
 '''
 
 

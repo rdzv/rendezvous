@@ -1,5 +1,33 @@
 # Rendezvous — project and agent handoff
 
+## Repository documentation, tests, and GitHub publication
+
+- Repository: `https://github.com/rdzv/rendezvous`; website: `https://rendezvous.sh`.
+  GitHub's homepage field points to the website. All website footers link to the
+  repository, including the CLI generator's footer.
+- **README source of truth is `public/docs.html`.** `tools/build_readme.py`
+  generates `README.md` from that page. Edit the website documentation and
+  regenerate; do not maintain a separate README copy of the user instructions.
+  The website build regenerates it and verification rejects drift.
+- **CLI page source of truth remains `tools/build_cli_docs.py`.** Update the
+  generator rather than `public/cli.html`.
+- All tests, container fixtures, live verification, and latency diagnostics now
+  live in `test/`; JavaScript tests are in `test/web/`. Build/deployment utilities
+  remain in `tools/`. The obsolete root-based `test_clean_ubuntu.sh` is removed.
+  Test paths in older verification history below refer to the previous layout.
+- New runtime deployment preflights the existing pushed `v<version>` GitHub tag,
+  then publishes verified full archives to GitHub Releases after Cloudflare checks.
+  Resume/mirror with `python3 tools/release.py github-release`; add `--check` for
+  read-only GitHub preflight. The uploader requires an approved existing tag,
+  verifies the runtime source snapshot against it, uploads a draft, checks hashes,
+  and publishes only after every asset is present. It never replaces a different
+  asset. `provenance.json` is publisher metadata, not a signed Actions attestation.
+- Existing 0.2.8 archives match runtime source in the original repository commit
+  `e8916253a4404e9feea06ff76acde7dc61c31107`. Use that commit for its release tag,
+  rather than retroactively rebuilding immutable 0.2.8 packages.
+- See BUILD.md for credentials, publication ordering, and recovery commands.
+  Git commits, tags, and pushes still require Jonathan's explicit approval.
+
 ## Latest iteration — 0.2.8 deployed and verified
 
 - Deployment: `656b4490-e172-41c1-9d57-81ee87c386ec`. Canonical website,
@@ -486,10 +514,10 @@ Key files:
 | `tools/bundle_tor.sh` | Build-container-only package/library collection |
 | `web/worker.js` | HTTP routing, installer mode/origin binding, security headers |
 | `public/index.html`, `docs.html`, `security.html` | Published frontend |
-| `test_rendezvous.py` | Real local SSH, replay/races, lifecycle, colors, stdin |
-| `test_installer.py` | Archive integrity, path rejection, quiet install/cache |
-| `tools/test_rootless.sh` | Unprivileged/read-only-container validation |
-| `tools/verify_portable_session.py` | Real Tor session plus connection-status timing |
+| `test/test_rendezvous.py` | Real local SSH, replay/races, lifecycle, colors, stdin |
+| `test/test_installer.py` | Archive integrity, path rejection, quiet install/cache |
+| `test/test_rootless.sh` | Unprivileged/read-only-container validation |
+| `test/verify_portable_session.py` | Real Tor session plus connection-status timing |
 | `DEPLOYMENT.md`, `dns/` | Infrastructure, ownership boundaries, customer DNS |
 
 For a new runtime release, update these two version declarations. The build

@@ -51,7 +51,7 @@ async def pair(host_arch, guest_arch):
                 '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
                 '--tmpfs', '/home/guest:exec,uid=10001,gid=10001,mode=700', '--tmpfs', '/tmp',
                 '--mount', f'type=bind,src={bundle_path(arch)},dst=/bundle,readonly',
-                '--mount', f'type=bind,src={ROOT}/tools/verify_cross_platform.py,dst=/verify.py,readonly',
+                '--mount', f'type=bind,src={ROOT}/test/verify_cross_platform.py,dst=/verify.py,readonly',
                 f'rendezvous-rootless-test:{arch}']
 
     async def spawn(command):
@@ -115,4 +115,5 @@ if __name__ == '__main__':
     if args.guest:
         guest(args.expected_host)
     else:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
         asyncio.run(verify())

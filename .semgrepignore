@@ -1,0 +1,11 @@
+# Keep test/ (including live verification tools) in security scans.
+# Only generated outputs, dependencies, caches, and Git metadata are excluded.
+.git/
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+node_modules/
+.wrangler/
+.build/
+public/releases/

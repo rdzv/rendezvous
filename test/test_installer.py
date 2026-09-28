@@ -12,7 +12,7 @@ import sys
 
 import pytest
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parents[1]
 from tools.release_config import VERSION, PLATFORMS
 
 

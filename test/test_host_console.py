@@ -260,7 +260,7 @@ asyncio.run(run())
     try:
         child = await asyncio.create_subprocess_exec(sys.executable, '-c', script,
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=slave if tty_logs else asyncio.subprocess.PIPE,
-            pass_fds=(slave,), cwd=str(Path(__file__).parent), env=dict(os.environ, TERM='xterm-256color', NO_COLOR='1'))
+            pass_fds=(slave,), cwd=str(Path(__file__).resolve().parents[1]), env=dict(os.environ, TERM='xterm-256color', NO_COLOR='1'))
         assert await asyncio.wait_for(child.stdout.readline(), 3) == b'READY\n'
         # A fragmented left-arrow escape sequence ends in D, but is not the D key.
         os.write(master, b'\x1b')

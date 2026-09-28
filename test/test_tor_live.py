@@ -1,4 +1,4 @@
-"""Opt-in real Tor integration: RUN_TOR_TEST=1 pytest -q test_tor_live.py."""
+"""Opt-in real Tor integration: RUN_TOR_TEST=1 pytest -q test/test_tor_live.py."""
 import asyncio
 import os
 from pathlib import Path
@@ -10,7 +10,7 @@ import pytest
 @pytest.mark.asyncio
 @pytest.mark.skipif(os.environ.get('RUN_TOR_TEST') != '1', reason='Requires live Tor network')
 async def test_live_host_and_join(tmp_path):
-    script = str(Path(__file__).with_name('rendezvous.py'))
+    script = str(Path(__file__).resolve().parents[1] / 'rendezvous.py')
     host = await asyncio.create_subprocess_exec(sys.executable, script, 'host', '--invite-timeout', '300', '--session-timeout', '30', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     client = None
     try:

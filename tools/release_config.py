@@ -7,6 +7,7 @@ VERSION = tomllib.loads((ROOT / 'pyproject.toml').read_text())['project']['versi
 BUILD = ROOT / '.build' / VERSION
 RELEASE = ROOT / 'public' / 'releases' / VERSION
 ORIGIN = 'https://rendezvous.fernando-eb7.workers.dev'
+GITHUB_REPOSITORY = 'rdzv/rendezvous'
 ALPINE_IMAGE = 'alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8'
 UBUNTU_IMAGE = 'ubuntu:22.04@sha256:b8b6ee6aa931ecd9d0d952abc34dc0e5f7c6a30c6bb71b079fe399fde0329c02'
 BINFMT_IMAGE = 'tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0'

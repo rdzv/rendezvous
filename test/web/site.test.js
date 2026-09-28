@@ -15,7 +15,7 @@ test('Human/Agent switch copies the exact requested prompt, including backticks'
     querySelector: () => copy,
     getElementById: id => id === 'join-command' ? command : status
   };
-  vm.runInNewContext(fs.readFileSync(new URL('../public/site.js', import.meta.url), 'utf8'),
+  vm.runInNewContext(fs.readFileSync(new URL('../../public/site.js', import.meta.url), 'utf8'),
     {document, navigator: {clipboard: {writeText: async text => { clipboard = text; }}}, setTimeout() {}});
   agent.handlers.click();
   await copy.handlers.click();

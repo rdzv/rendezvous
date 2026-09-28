@@ -2,8 +2,11 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
+from pathlib import Path
+import sys
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 from release_config import ROOT, VERSION, RELEASE, PLATFORMS, UBUNTU_IMAGE, TOR_NETWORK_TIMEOUTS
 
 
@@ -12,7 +15,7 @@ def verify(arch, published=False, install_only=False):
     image = f'rendezvous-rootless-test:{arch}'
     subprocess.run(['docker', 'build', '--platform', platform,
                     '--build-arg', f'BASE_IMAGE={UBUNTU_IMAGE}',
-                    '-f', str(ROOT / 'tools/rootless-test.Dockerfile'), '-t', image, str(ROOT / 'tools')],
+                    '-f', str(ROOT / 'test/rootless-test.Dockerfile'), '-t', image, str(ROOT / 'test')],
                    check=True, timeout=900)
     command = ['docker', 'run', '--rm', '--platform', platform, '--read-only',
                '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
@@ -22,7 +25,7 @@ def verify(arch, published=False, install_only=False):
                '-e', f'SKIP_TOR_TEST={1 if install_only else 0}',
                '--mount', f'type=bind,src={RELEASE},dst=/release,readonly',
                '--mount', f'type=bind,src={ROOT}/public/install.sh,dst=/installer,readonly',
-               '--mount', f'type=bind,src={ROOT}/tools,dst=/tests,readonly',
+               '--mount', f'type=bind,src={ROOT}/test,dst=/tests,readonly',
                image, 'sh', '/tests/test_rootless.sh']
     for attempt in range(1, 4):
         result = subprocess.run(command, capture_output=True, text=True, timeout=1200)

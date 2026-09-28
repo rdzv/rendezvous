@@ -6,7 +6,7 @@ or assemble a release by remembering individual commands.
 
 ## Build machine
 
-- Linux, Python 3.12+, Docker Engine with Buildx, Node.js/npm, and Semgrep.
+- Linux, Python 3.12+, Docker Engine with Buildx, Node.js/npm, GitHub CLI (`gh`), and Semgrep.
 - Python test dependencies in `.venv`: `python3 -m venv .venv`, then
   `.venv/bin/python -m pip install -e '.[test]'`.
 - Cloudflare deployment credentials in the environment, for **Fernando's account**
@@ -15,6 +15,9 @@ or assemble a release by remembering individual commands.
   build context, public assets, or command output.
   The release runner passes these credentials only to the Wrangler deployment
   subprocess, not to dependency installation, build tools, or tests.
+- GitHub release access to `rdzv/rendezvous`, using `GH_TOKEN` or `GITHUB_TOKEN`
+  (or an existing `gh` login). The runner passes GitHub token environment variables
+  only to the GitHub publisher, separately from Cloudflare credentials.
 
 On this x86_64 machine, enable the pinned ARM emulators once (and again after a
 reboot if the registrations are gone):
@@ -37,6 +40,11 @@ Set the new version in `pyproject.toml` and the CLI's `--version` in
 release paths, CLI reference, and existing website version labels/source links
 are derived from the release; do not update those generated values by hand.
 
+Publication also requires an approved, pushed `v<version>` tag in
+`rdzv/rendezvous`. The tag must contain the runtime application and dependency
+declarations in the release source snapshot. Obtain authorization for commits,
+tags, and pushes separately; the release uploader does not create or move tags.
+
 ```sh
 python3 tools/release.py publish
 ```
@@ -50,8 +58,8 @@ This command performs the complete ordered workflow:
    checking the upstream hashes.
 4. Execute the **built launcher** for `--version` and every existing help section
    on **all three architectures**. Require identical output, then generate the
-   CLI page, platform-selecting installer, website release references, and source
-   archive.
+   CLI page, platform-selecting installer, website release references, README,
+   and source archive. Before deployment, preflight the GitHub tag and artifacts.
 5. Run the Python/web tests, Semgrep, and fresh/repeated rootless installation plus
    real Tor host/guest sessions on each architecture in read-only Ubuntu 22.04
    containers. These have no system Python, Tor, or sudo; the runtime is tested
@@ -67,7 +75,12 @@ This command performs the complete ordered workflow:
    assets together via the existing Wrangler configuration.
 7. Check published pages against the built files, canonical host/join installers,
    manifests, and full archive checksums for all platforms. Repeat rootless
-   installation from the public service on every architecture.
+    installation from the public service on every architecture.
+8. Upload the full runtime archives, original source snapshot, third-party
+   sources/recipes/redistribution information, manifests,
+   `provenance.json`, and `SHA256SUMS` to GitHub Releases. Upload to a draft,
+   verify every asset, and then publish it. Existing assets must match exactly;
+   the uploader never clobbers a different asset or mutates a published release.
 
 Failures stop publication. A failed post-publication check is reported as a
 failure, not as a successful release. Never reuse a published runtime version.
@@ -79,10 +92,12 @@ checks without rebuilding or overwriting the published release:
 ```sh
 python3 tools/check_deployment.py
 python3 tools/check_deployment.py https://rendezvous.sh
-python3 tools/verify_platforms.py --published --install-only
+python3 test/verify_platforms.py --published --install-only
 ```
 
 All three commands must pass before calling the deployment verified.
+For a new runtime release, complete/resume the GitHub upload with
+`python3 tools/release.py github-release` after those checks pass.
 
 For separate stages (for example while developing this workflow):
 
@@ -105,6 +120,18 @@ to replace published release assets.
 
 ## Website-only updates and documentation ownership
 
+**`public/docs.html` owns the user documentation, including README content.**
+`tools/build_readme.py` converts that page's main content into `README.md`, with
+absolute website links and a repository-specific link to these build instructions.
+Edit the site documentation rather than maintaining a second copy in the README.
+The website build regenerates the README, and verification rejects drift. For a
+documentation-only edit, regenerate/check it directly with:
+
+```sh
+python3 tools/build_readme.py
+python3 tools/build_readme.py --check
+```
+
 **`tools/build_cli_docs.py` owns the entire CLI reference page**, including its
 surrounding documentation, navigation, and footer. Edit that generator when
 changing the CLI documentation. `public/cli.html` is generated output; editing it
@@ -125,6 +152,50 @@ This does not rebuild or overwrite immutable release archives. A missing or
 stale bundle is an error; do not silently fall back to generating help from the
 source checkout. Keep release build artifacts available on the maintainer machine.
 
+## GitHub releases
+
+To mirror an already-deployed runtime or resume an interrupted upload:
+
+```sh
+python3 tools/release.py github-release --check
+python3 tools/release.py github-release
+```
+
+Both commands require the existing pushed release tag. `--check` makes no GitHub
+changes. Runtime archives are reconstructed from the verified Cloudflare parts,
+so GitHub receives the identical full `.tar.gz` files rather than split downloads.
+The original source archive remains unchanged. Publication checks its
+`rendezvous.py`, `agent_session.py`, `requirements.lock`, and `pyproject.toml`
+against the tagged GitHub commit, and checks the actual packaged application in
+every runtime archive against that source snapshot.
+The third-party source archive preserves the release's Tor/libseccomp sources,
+packaging recipes, and redistribution information alongside the binaries.
+
+`provenance.json` records this runtime-source match, the source commit, artifact
+hashes, and the bundles' upstream component metadata. This is publisher-supplied
+provenance; it does not claim the bundles were built by GitHub Actions or provide
+a signed build attestation. `SHA256SUMS` covers all attached artifacts except
+itself. GitHub Releases is the distribution mechanism for these archives.
+
+For the first GitHub mirror of existing 0.2.8 assets, the source match is against
+the original 0.2.8 repository commit (`e891625`), rather than a later repository
+cleanup commit. Tagging/pushing that release still requires approval.
+
+## Tests and repository layout
+
+All Python tests, JavaScript tests, container fixtures, live-session verification,
+and latency diagnostics live under `test/`. Pytest discovers `test/` by default;
+`npm test` runs `test/web/*.test.js`. Build and publication code stays in `tools/`.
+The obsolete root-based `test_clean_ubuntu.sh` fixture was replaced by the current
+rootless installer tests and has been removed.
+
+```sh
+.venv/bin/python -m pytest -q
+npm test
+python3 test/verify_platforms.py
+python3 test/verify_cross_platform.py
+```
+
 ## Inputs and artifacts
 
 - `tools/release_config.py`: target matrix, SHA-256-pinned standalone Python
@@ -144,7 +215,9 @@ source checkout. Keep release build artifacts available on the maintainer machin
 - `public/install.sh`: generated per-platform hash/part selection. It verifies the
   complete archive before extraction and keeps architecture-specific cache keys.
 - `public/releases/<version>/rendezvous-<version>-source.tar.gz`: application,
-  tests, build scripts/instructions, and website sources for that release.
+   tests, build scripts/instructions, and website sources for that release.
+- `.build/<version>/github-release/`: prepared full GitHub release artifacts,
+  checksum inventory, and provenance record; not committed to Git.
 
 The build pins Python, runtime dependencies, image inputs, and the Tor version.
 Ubuntu build packages and Alpine transitive dependencies come from their signed

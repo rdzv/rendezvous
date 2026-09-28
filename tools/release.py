@@ -8,17 +8,24 @@ import sys
 from release_config import ROOT, BINFMT_IMAGE
 
 
-def run(*command, timeout=1800, env=None, publisher_credentials=False):
+def run(*command, timeout=1800, env=None, publisher_credentials=False, github_credentials=False):
     print('+ ' + ' '.join(map(str, command)), flush=True)
     child_env = dict(os.environ if env is None else env)
     if not publisher_credentials:
         for name in ['CLOUDFLARE_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_EMAIL']:
             child_env.pop(name, None)
+    if not github_credentials:
+        for name in ['GH_TOKEN', 'GITHUB_TOKEN', 'GITHUB_PAT']:
+            child_env.pop(name, None)
     subprocess.run(list(map(str, command)), cwd=ROOT, check=True, timeout=timeout, env=child_env)
 
 
-def python(tool, *args, timeout=3600):
-    run(sys.executable, ROOT / 'tools' / tool, *args, timeout=timeout)
+def python(tool, *args, timeout=3600, github_credentials=False):
+    run(sys.executable, ROOT / 'tools' / tool, *args, timeout=timeout, github_credentials=github_credentials)
+
+
+def integration(script, *args, timeout=3600):
+    run(sys.executable, ROOT / 'test' / script, *args, timeout=timeout)
 
 
 def build(replace):
@@ -36,6 +43,7 @@ def assets():
 
 
 def verify(published=False):
+    python('build_readme.py', '--check')
     from build_release import installer_text, verified_manifest
     from build_cli_docs import render
     from release_config import container_cli
@@ -51,29 +59,36 @@ def verify(published=False):
     run('semgrep', '--config', 'p/python', '--config', 'p/security-audit', '--error',
         '--metrics=off', '--exclude', '.build', '--exclude', '.venv',
         '--exclude', 'node_modules', '--exclude', 'public/releases', '.', timeout=600)
-    python('verify_platforms.py', *(['--published'] if published else []), timeout=3600)
-    python('verify_cross_platform.py', timeout=1800)
+    integration('verify_platforms.py', *(['--published'] if published else []), timeout=3600)
+    integration('verify_cross_platform.py', timeout=1800)
 
 
 def deploy():
     from build_portable import is_published
     from build_release import source_archive
-    if not is_published():
+    new_runtime = not is_published()
+    if new_runtime:
         # Capture final build/test instructions in a new release's source asset.
         # Website-only deployments never replace an already-published archive.
         source_archive()
+        python('publish_github.py', '--check', github_credentials=True)
     verify()
     run('npx', '--no-install', 'wrangler', 'deploy', '--config', 'wrangler.toml', timeout=600, publisher_credentials=True)
     python('check_deployment.py')
     python('check_deployment.py', 'https://rendezvous.sh')
-    python('verify_platforms.py', '--published', '--install-only', timeout=1800)
+    integration('verify_platforms.py', '--published', '--install-only', timeout=1800)
+    if new_runtime:
+        python('publish_github.py', github_credentials=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['setup-emulation', 'build', 'assets', 'website', 'verify', 'deploy', 'publish'])
+    parser.add_argument('action', choices=['setup-emulation', 'build', 'assets', 'website', 'verify', 'deploy', 'publish', 'github-release'])
     parser.add_argument('--replace-unpublished', action='store_true', help='Rebuild staged, never-published runtime assets')
+    parser.add_argument('--check', action='store_true', help='Check github-release prerequisites without uploading')
     args = parser.parse_args()
+    if args.check and args.action != 'github-release':
+        parser.error('--check applies only to github-release')
     if args.action == 'setup-emulation':
         run('docker', 'run', '--privileged', '--rm', BINFMT_IMAGE, '--install', 'arm64,arm')
     elif args.action == 'build':
@@ -86,6 +101,8 @@ def main():
         verify()
     elif args.action == 'deploy':
         deploy()
+    elif args.action == 'github-release':
+        python('publish_github.py', *(['--check'] if args.check else []), github_credentials=True)
     else:
         build(args.replace_unpublished)
         deploy()

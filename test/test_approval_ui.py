@@ -90,7 +90,7 @@ asyncio.run(run())
     child = None
     try:
         child = await asyncio.create_subprocess_exec(sys.executable, '-c', script, stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE, stderr=slave, pass_fds=(slave,), cwd=str(Path(__file__).parent),
+            stdout=asyncio.subprocess.PIPE, stderr=slave, pass_fds=(slave,), cwd=str(Path(__file__).resolve().parents[1]),
             env=dict(os.environ, TERM='xterm', NO_COLOR='1'))
         assert await asyncio.wait_for(child.stdout.readline(), 3) == b'READY\n'
         await asyncio.sleep(0.03)

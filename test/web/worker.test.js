@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import worker from './worker.js';
+import worker from '../../web/worker.js';
 
 const env = { ASSETS: { fetch: async request => {
   const path = new URL(request.url).pathname;

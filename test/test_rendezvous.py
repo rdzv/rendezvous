@@ -149,7 +149,7 @@ async def test_join_interactive_pty_restores_terminal_and_streams(ending):
     reader = asyncio.create_task(collect())
     try:
         child = await asyncio.create_subprocess_exec(sys.executable, '-c', JOIN_PROBE,
-            stdin=slave, stdout=slave, stderr=slave, cwd=str(Path(__file__).parent),
+            stdin=slave, stdout=slave, stderr=slave, cwd=str(Path(__file__).resolve().parents[1]),
             env=dict(os.environ, TEST_PORT=str(server.get_port()), TEST_INVITATION=invitation, NO_COLOR=''))
         async def ready():
             while termios.tcgetattr(slave) == settings:
@@ -205,7 +205,7 @@ async def test_join_redirected_streams_and_remote_exit_status(tmp_path):
         with (tmp_path / 'out').open('wb') as output:
             child = await asyncio.create_subprocess_exec(sys.executable, '-c', JOIN_PROBE,
                 stdin=asyncio.subprocess.DEVNULL, stdout=output, stderr=asyncio.subprocess.PIPE,
-                cwd=str(Path(__file__).parent), env=dict(os.environ, TEST_PORT=str(server.get_port()),
+                cwd=str(Path(__file__).resolve().parents[1]), env=dict(os.environ, TEST_PORT=str(server.get_port()),
                     TEST_INVITATION=invitation, TEST_COMMAND="printf 'COMMAND-OK'; exit 17"))
             _, errors = await asyncio.wait_for(child.communicate(), 10)
         assert child.returncode == 17, errors

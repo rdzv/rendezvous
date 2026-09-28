@@ -4,7 +4,7 @@ import sys
 
 
 def test_published_cli_reference_matches_current_parser():
-    root = Path(__file__).parent
+    root = Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location('build_cli_docs', root / 'tools/build_cli_docs.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -12,7 +12,7 @@ def test_published_cli_reference_matches_current_parser():
 
 
 def test_public_docs_use_canonical_endpoints_and_link_cli_reference():
-    root = Path(__file__).parent / 'public'
+    root = Path(__file__).resolve().parents[1] / 'public'
     for name in ['index.html', 'docs.html']:
         text = (root / name).read_text()
         assert 'href="/cli"' in text

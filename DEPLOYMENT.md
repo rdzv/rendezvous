@@ -99,6 +99,13 @@ changes, use `python3 tools/release.py website` followed by
 `python3 tools/release.py deploy`. Do not bypass the workflow with direct Wrangler
 commands. Both deployment paths stay in Fernando's existing account.
 
+New runtime releases are also uploaded to `https://github.com/rdzv/rendezvous/releases`
+after verification. The existing pushed version tag is required before publication.
+Use `python3 tools/release.py github-release` to mirror/resume an already-deployed
+release; `--check` validates prerequisites without changing GitHub. Details and
+provenance semantics are in BUILD.md. README content is generated from
+`public/docs.html` by `tools/build_readme.py`.
+
 `tools/lock_dependencies.py` refreshes wheel hashes for explicitly selected
 runtime versions. It is a maintainer operation, not a user install step.
 
@@ -106,7 +113,7 @@ runtime versions. It is a maintainer operation, not a user install step.
 including surrounding documentation and navigation. Edit the generator, not the
 generated page. The release build runs the packaged launcher on every architecture
 for the existing general, host, join, and session help sections and requires
-identical results. `test_cli_docs.py` rejects a stale public reference.
+identical results. `test/test_cli_docs.py` rejects a stale public reference.
 
 The workflow invokes `tools/build_portable.py` for new runtime versions. It uses
 a digest-pinned Alpine build container for Tor and its private musl loader/libs,
@@ -122,5 +129,5 @@ and cached long-term. Runtime changes require a new version and archive path.
 Portable installer verification includes corrupt-archive/path-escape rejection,
 fresh-user install, and real Tor command execution on Ubuntu 22.04 as UID 10001
 with a read-only system filesystem and no system Python, Tor, or sudo. Both
-aliases and repeat-install reuse passed. See tools/rootless-test.Dockerfile,
-tools/test_rootless.sh, and VERIFICATION.md.
+aliases and repeat-install reuse passed. See test/rootless-test.Dockerfile,
+test/test_rootless.sh, and VERIFICATION.md.

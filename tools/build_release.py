@@ -9,6 +9,7 @@ import re
 import tarfile
 
 from build_cli_docs import render
+from build_readme import render as render_readme
 from build_portable import require_unpublished
 from release_config import ROOT, VERSION, RELEASE, PLATFORMS, bundle_path, container_cli
 
@@ -66,14 +67,16 @@ def website():
         content = re.sub(r'(?<=LINUX PREVIEW · )\d+\.\d+\.\d+', VERSION, content)
         content = re.sub(r'(?<=Downloading Rendezvous )\d+\.\d+\.\d+', VERSION, content)
         path.write_text(content)
+    (ROOT / 'README.md').write_text(render_readme((ROOT / 'public/docs.html').read_text()))
     print('Built website and installer from all three verified platform bundles', flush=True)
 
 
 def source_archive():
     require_unpublished()
     files = set()
-    for pattern in ['*.py', '*.md', '*.toml', '*.lock', 'install.sh.in', 'package*.json',
+    for pattern in ['*.py', '*.md', '*.toml', '*.lock', '.gitignore', '.semgrepignore', 'install.sh.in', 'package*.json',
                     'tools/*.py', 'tools/*.sh', 'tools/*.Dockerfile', 'tools/*.lock',
+                    'test/*.py', 'test/*.sh', 'test/*.Dockerfile', 'test/web/*.js',
                     'web/*.js', 'public/*.html', 'public/*.css', 'public/*.js', 'public/*.svg']:
         files.update(ROOT.glob(pattern))
     buffer = io.BytesIO()

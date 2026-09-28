@@ -18,3 +18,7 @@ rdzv = "rendezvous:main"
 
 [tool.setuptools]
 py-modules = ["rendezvous", "agent_session"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+pythonpath = [".", "tools"]
