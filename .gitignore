@@ -8,3 +8,10 @@ public/releases/
 public/install.sh
 deployment-state.json
 .build/
+
+# Internal documentation (keep on filesystem, not in repo)
+PROJECT_HANDOFF.md
+VERIFICATION.md
+DEPLOYMENT.md
+dns/
+tools/export_customer_dns.py
